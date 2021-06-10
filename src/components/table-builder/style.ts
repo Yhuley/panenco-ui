@@ -112,4 +112,8 @@ export const StyledTable = styled.div`
   .pagination {
     padding: 0.5rem;
   }
+  .thContainer {
+    display: flex;
+    justify-content: space-between;
+  }
 `;

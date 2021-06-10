@@ -259,36 +259,38 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
 
                   return (
                     <th key="th" {...column.getHeaderProps()}>
-                      {renderLeft && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (headerGroup.headers[index - 1]) {
-                              setOrder(column.id, headerGroup.headers[index - 1].id);
-                            }
-                          }}
-                        >
-                          Left
-                        </button>
-                      )}
-                      {column.render('Header')}
-                      {renderRight && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (headerGroup.headers[index + 1]) {
-                              setOrder(column.id, headerGroup.headers[index + 1].id);
-                            }
-                          }}
-                        >
-                          Right
-                        </button>
-                      )}
+                      <div className="thContainer">
+                        {renderLeft && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (headerGroup.headers[index - 1]) {
+                                setOrder(column.id, headerGroup.headers[index - 1].id);
+                              }
+                            }}
+                          >
+                            Left
+                          </button>
+                        )}
+                        {column.render('Header')}
+                        {renderRight && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (headerGroup.headers[index + 1]) {
+                                setOrder(column.id, headerGroup.headers[index + 1].id);
+                              }
+                            }}
+                          >
+                            Right
+                          </button>
+                        )}
 
-                      <div
-                        {...column.getResizerProps()}
-                        className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                      />
+                        <div
+                          {...column.getResizerProps()}
+                          className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                        />
+                      </div>
                     </th>
                   );
                 })}
