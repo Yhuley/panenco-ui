@@ -3,8 +3,12 @@ import cx from 'classnames';
 import { useTable, useRowSelect, useColumnOrder, usePagination, useBlockLayout, useResizeColumns } from 'react-table';
 import { useSticky } from 'react-table-sticky';
 
-import makeData from './makeData';
+import { useMode, useTheme } from 'utils/hooks';
+import { ButtonIcon } from 'components/button-icon';
+import { Text } from 'components/text';
+import { Icon } from 'components/icon';
 import { StyledTable } from './style';
+import makeData from './makeData';
 
 export interface TableBuilderProps extends React.HTMLAttributes<HTMLDivElement> {
   color?: string;
@@ -58,7 +62,7 @@ const defaultColumn = {
 };
 
 export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
-  ({ className, children, ...props }: TableBuilderProps, ref): JSX.Element => {
+  ({ className, children, style, ...props }: TableBuilderProps, ref): JSX.Element => {
     const defaultColumns = React.useMemo(
       () => [
         {
@@ -229,8 +233,11 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
 
     const [tableWidth, setWidth] = React.useState(0);
 
+    const theme = useTheme();
+    const { mode } = useMode();
+
     return (
-      <StyledTable className={cx('TableBuilder', className)}>
+      <StyledTable className={cx('TableBuilder', className)} theme={theme} mode={mode} ref={ref} style={style}>
         <button type="button" onClick={resetData}>
           Reset Data
         </button>
@@ -261,29 +268,27 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                     <th key="th" {...column.getHeaderProps()}>
                       <div className="thContainer">
                         {renderLeft && (
-                          <button
-                            type="button"
-                            onClick={() => {
+                          <ButtonIcon
+                            iconClassName="controls"
+                            icon={Icon.icons.chevronLeft}
+                            onClick={(): void => {
                               if (headerGroup.headers[index - 1]) {
                                 setOrder(column.id, headerGroup.headers[index - 1].id);
                               }
                             }}
-                          >
-                            Left
-                          </button>
+                          />
                         )}
-                        {column.render('Header')}
+                        <Text weight="medium">{column.render('Header')}</Text>
                         {renderRight && (
-                          <button
-                            type="button"
-                            onClick={() => {
+                          <ButtonIcon
+                            iconClassName="controls"
+                            icon={Icon.icons.chevronRight}
+                            onClick={(): void => {
                               if (headerGroup.headers[index + 1]) {
                                 setOrder(column.id, headerGroup.headers[index + 1].id);
                               }
                             }}
-                          >
-                            Right
-                          </button>
+                          />
                         )}
 
                         <div
