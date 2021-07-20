@@ -5,7 +5,6 @@ import { useSticky } from 'react-table-sticky';
 
 import { useMode, useTheme } from 'utils/hooks';
 import { ButtonIcon } from 'components/button-icon';
-import { Text } from 'components/text';
 import { Icon } from 'components/icon';
 import { StyledTable } from './style';
 import makeData from './makeData';
@@ -13,47 +12,48 @@ import makeData from './makeData';
 export interface TableBuilderProps extends React.HTMLAttributes<HTMLDivElement> {
   color?: string;
 }
+export type CompareElementIdType = {
+  firstElementId: string;
+  secondElementId: string;
+};
 
-const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }: { indeterminate: any }, ref: any) => {
-  const defaultRef = React.useRef();
-  const resolvedRef = ref || defaultRef;
+const IndeterminateCheckbox = React.forwardRef(
+  ({ indeterminate, ...rest }: { indeterminate: any; onChange: any }, ref: any) => {
+    const defaultRef = React.useRef();
+    const resolvedRef = ref || defaultRef;
 
-  React.useEffect(() => {
-    resolvedRef.current.indeterminate = indeterminate;
-  }, [resolvedRef, indeterminate]);
+    React.useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate;
+    }, [resolvedRef, indeterminate]);
 
-  return (
-    <>
-      <input type="checkbox" ref={resolvedRef} {...rest} />
-    </>
-  );
-});
+    return (
+      <>
+        <input type="checkbox" ref={resolvedRef} {...rest} />
+      </>
+    );
+  },
+);
 
 // Create an editable cell renderer
-const EditableCell = ({
-  value: initialValue,
-  row: { index },
-  column: { id },
-  updateMyData, // This is a custom function that we supplied to our table instance
-}) => {
+const EditableCell = ({ value: initialValue }: { value: string }): JSX.Element => {
   // We need to keep and update the state of the cell normally
   const [value, setValue] = React.useState(initialValue);
 
-  const onChange = (e) => {
+  const onChange = (e): void => {
     setValue(e.target.value);
   };
 
   // We'll only update the external data when the input is blurred
-  const onBlur = () => {
-    updateMyData(index, id, value);
-  };
+  // const onBlur = (): void => {
+  //   updateMyData(index, id, value);
+  // };
 
   // If the initialValue is changed external, sync it up with our state
   React.useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
 
-  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+  return <input value={value} onChange={onChange} />;
 };
 
 // Set our editable cell renderer as the default Cell renderer
@@ -62,13 +62,13 @@ const defaultColumn = {
 };
 
 export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
-  ({ className, children, style, ...props }: TableBuilderProps, ref): JSX.Element => {
+  ({ className, style }: TableBuilderProps, ref): JSX.Element => {
     const defaultColumns = React.useMemo(
       () => [
         {
           Header: 'First Name',
           accessor: 'firstName',
-          sticky: 'left',
+          // sticky: 'left',
         },
         {
           Header: 'Last Name',
@@ -96,10 +96,15 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
 
     const [data, setData] = React.useState(() => makeData(5));
     const [columns, setColumns] = React.useState(defaultColumns);
+    const [activeCell, setActiveCell] = React.useState<{ row: number; column: number }>({
+      row: -1,
+      column: -1,
+    });
     const [originalData] = React.useState(data);
     const [skipPageReset, setSkipPageReset] = React.useState(false);
+    const activeDiv = React.useRef<HTMLDivElement>(null);
 
-    const handleColumnsCreation = (column) => {
+    const handleColumnsCreation = (column): void => {
       setColumns((oldColumns) => oldColumns.concat(column));
     };
 
@@ -109,7 +114,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
     // When our cell renderer calls updateMyData, we'll use
     // the rowIndex, columnId and new value to update the
     // original data
-    const updateMyData = (rowIndex, columnId, value) => {
+    const updateMyData = (rowIndex, columnId, value): void => {
       // We also turn on the flag to not reset the page
       setSkipPageReset(true);
       setData((old) =>
@@ -132,7 +137,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       setSkipPageReset(false);
     }, [data]);
 
-    const resetData = () => setData(originalData);
+    const resetData = (): void => setData(originalData);
 
     const {
       getTableProps,
@@ -169,33 +174,101 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       useRowSelect,
       (hooks) => {
         hooks.visibleColumns.push((cols) => [
-          // Let's make a column for selection
+          // Column for selection
           {
             id: 'selection',
             sticky: 'left',
+            width: 56,
             // The header can use the table's getToggleAllRowsSelectedProps method
             // to render a checkbox
-            Header: ({ getToggleAllPageRowsSelectedProps }: { getToggleAllPageRowsSelectedProps: any }) => (
-              <div>
-                <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
-              </div>
-            ),
+            Header: ({
+              getToggleAllPageRowsSelectedProps,
+            }: {
+              getToggleAllPageRowsSelectedProps: any;
+            }): JSX.Element => <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />,
             // The cell can use the individual row's getToggleRowSelectedProps method
             // to the render a checkbox
-            Cell: ({ row }: { row: any }) => (
-              <div>
-                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-              </div>
-            ),
+            Cell: ({ row }: { row: any }): JSX.Element => {
+              return <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />;
+            },
           },
           ...cols,
         ]);
       },
     );
 
-    const mapById = (arrWithIds) => arrWithIds.map((el) => el.id);
+    const handleKeyDown = (e): void => {
+      switch (e.keyCode) {
+        case 37: {
+          // left arrow click
+          e.preventDefault();
+          setActiveCell({
+            row: activeCell.row,
+            column: activeCell.column && activeCell.column > 0 ? activeCell.column - 1 : 0,
+          });
 
-    const swap = (firstElementId, secondElementId) => {
+          break;
+        }
+        case 38: {
+          // up arrow click
+          e.preventDefault();
+          setActiveCell({
+            row: activeCell.row && activeCell.row > 0 ? activeCell.row - 1 : 0,
+            column: activeCell.column,
+          });
+          break;
+        }
+        case 39: {
+          // right arrow click
+          e.preventDefault();
+          setActiveCell({
+            row: activeCell.row,
+            column: activeCell.column < visibleColumns.length - 1 ? activeCell.column + 1 : visibleColumns.length - 1,
+          });
+
+          break;
+        }
+        case 40: {
+          // down arrow click
+          e.preventDefault();
+          setActiveCell({
+            row: activeCell.row < data.length - 1 ? activeCell.row + 1 : data.length - 1,
+            column: activeCell.column,
+          });
+
+          break;
+        }
+        default:
+          break;
+      }
+    };
+
+    React.useEffect(() => {
+      const activeKek = document.querySelector(
+        `[data-active-row="${activeCell.row}"][data-active-column="${activeCell.column}"]`,
+      );
+
+      const cellInput = activeKek?.firstElementChild as HTMLInputElement;
+      const inputValue = cellInput?.value;
+      const focusSelection = inputValue ? inputValue.length : 0;
+
+      cellInput?.focus();
+
+      if (cellInput?.type === 'text') {
+        if (activeCell) cellInput?.setSelectionRange(focusSelection, focusSelection);
+      }
+    }, [activeCell.column, activeCell.row]);
+
+    React.useEffect(() => {
+      document.addEventListener('keydown', handleKeyDown, false);
+      return (): void => {
+        document.removeEventListener('keydown', handleKeyDown, false);
+      };
+    }, [handleKeyDown]);
+
+    const mapById = (arrWithIds): string[] => arrWithIds.map((el) => el.id);
+
+    function swap({ firstElementId, secondElementId }: CompareElementIdType): string[] {
       const swapped = mapById(visibleColumns);
 
       const firstElementIdIndex = swapped.indexOf(firstElementId);
@@ -207,13 +280,13 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       ];
 
       return swapped;
+    }
+
+    const setOrder = (firstElementId: string, secondElementId: string): void => {
+      setColumnOrder(swap({ firstElementId, secondElementId }));
     };
 
-    const setOrder = (firstElementId, secondElementId) => {
-      setColumnOrder(swap(firstElementId, secondElementId));
-    };
-
-    const addRow = () => {
+    const addRow = (): void => {
       setSkipPageReset(true);
 
       setData((old) => {
@@ -248,7 +321,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
 
         <table
           {...getTableProps()}
-          ref={(refElem) => {
+          ref={(refElem): void => {
             if (refElem) {
               setWidth(refElem.offsetWidth);
             }
@@ -278,7 +351,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                             }}
                           />
                         )}
-                        <Text weight="medium">{column.render('Header')}</Text>
+                        <div className="thContainerHeader">{column.render('Header')}</div>
                         {renderRight && (
                           <ButtonIcon
                             iconClassName="controls"
@@ -305,7 +378,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
               type="button"
               style={{ right: 0, left: tableWidth }}
               className="newColumn"
-              onClick={() => {
+              onClick={(): void => {
                 handleColumnsCreation({
                   Header: `Column ${columns.length}`,
                   accessor: `createdCol${columns.length}`,
@@ -320,55 +393,71 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
               prepareRow(row);
               return (
                 <tr key="tr" {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
+                  {row.cells.map((cell, index) => {
+                    const isActiveCell = index === activeCell.column && cell.row.index === activeCell.row;
                     return (
-                      <td key="td" {...cell.getCellProps()}>
-                        {cell.render('Cell')}
+                      <td
+                        key="td"
+                        {...cell.getCellProps()}
+                        aria-hidden="true"
+                        onClick={(): void => {
+                          setActiveCell({ row: cell.row.index, column: index });
+                        }}
+                      >
+                        <div
+                          className="tdContent"
+                          style={{ border: `2px solid ${isActiveCell ? theme.colors.accent : 'transparent'}` }}
+                          ref={activeDiv}
+                          data-active-row={Number(i)}
+                          data-active-column={Number(index)}
+                        >
+                          {cell.render('Cell')}
+                        </div>
                       </td>
                     );
                   })}
                 </tr>
               );
             })}
-            <button type="button" onClick={() => addRow()} className="newRow">
+            <button type="button" onClick={(): void => addRow()} className="newRow">
               Add row
             </button>
           </tbody>
         </table>
         <div className="pagination">
-          <button type="button" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+          <button type="button" onClick={(): void => gotoPage(0)} disabled={!canPreviousPage}>
             {'<<'}
-          </button>{' '}
-          <button type="button" onClick={() => previousPage()} disabled={!canPreviousPage}>
+          </button>
+          <button type="button" onClick={(): void => previousPage()} disabled={!canPreviousPage}>
             {'<'}
-          </button>{' '}
-          <button type="button" onClick={() => nextPage()} disabled={!canNextPage}>
+          </button>
+          <button type="button" onClick={(): void => nextPage()} disabled={!canNextPage}>
             {'>'}
-          </button>{' '}
-          <button type="button" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+          </button>
+          <button type="button" onClick={(): void => gotoPage(pageCount - 1)} disabled={!canNextPage}>
             {'>>'}
-          </button>{' '}
+          </button>
           <span>
-            Page{' '}
+            Page
             <strong>
               {pageIndex + 1} of {pageOptions.length}
-            </strong>{' '}
+            </strong>
           </span>
           <span>
-            | Go to page:{' '}
+            | Go to page:
             <input
               type="number"
               defaultValue={pageIndex + 1}
-              onChange={(e) => {
+              onChange={(e): void => {
                 const currentPage = e.target.value ? Number(e.target.value) - 1 : 0;
                 gotoPage(currentPage);
               }}
               style={{ width: '100px' }}
             />
-          </span>{' '}
+          </span>
           <select
             value={pageSize}
-            onChange={(e) => {
+            onChange={(e): void => {
               setPageSize(Number(e.target.value));
             }}
           >

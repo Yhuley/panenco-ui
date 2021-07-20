@@ -29,12 +29,12 @@ export const StyledTable = styled.div`
     th,
     td {
       // background-color: #fff;
-      margin: 0;
-      overflow: hidden;
-
-      padding: 0.5rem;
       border-bottom: 1px solid #cfd8dc;
       border-right: 1px solid #cfd8dc;
+      margin: 0;
+      min-height: 56px;
+      overflow: hidden;
+      // padding: 0.5rem;
 
       :last-child {
         border-right: 0;
@@ -116,15 +116,32 @@ export const StyledTable = styled.div`
       color: ${(props: any): string => props.theme.colors.light};
       padding: 16px;
     }
+
+    td {
+      .tdContent {
+        align-items: center;
+        border: 2px solid transparent;
+        display: flex;
+        height: 100%;
+        padding: 8px 16px;
+      }
+    }
   }
 
   .pagination {
     padding: 0.5rem;
   }
+
   .thContainer {
     display: flex;
     justify-content: space-between;
+
+    &Header {
+      width: 100%;
+      white-space: nowrap;
+    }
   }
+
   .controls {
     color: ${(props: any): string => props.theme.colors.light};
   }
