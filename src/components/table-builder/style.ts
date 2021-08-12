@@ -1,7 +1,50 @@
-// import { primary } from './../../../lib/styles/colors.d';
 import { styled } from 'linaria/react';
+import { PUITheme, ThemeMode } from 'utils/types';
 
-export const StyledTable = styled.div`
+export const StyledDropdown = styled.div<{
+  mode: ThemeMode;
+  theme: PUITheme;
+}>`
+  background-color: ${(props: any): string => props.theme.colors.light};
+  border: 1px solid #cfd8dc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  left: 0;
+  margin: 8px 0;
+  position: absolute;
+  padding: 16px;
+  width: 272px;
+  z-index: 1;
+
+  .buttonGroup {
+    &Item {
+      align-items: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+
+      &:not(:first-child) {
+        margin-top: 16px;
+      }
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #cfd8dc;
+      padding-bottom: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-top: 16px;
+    }
+  }
+`;
+
+export const StyledTable = styled.div<{
+  mode: ThemeMode;
+  theme: PUITheme;
+}>`
   overflow: scroll;
 
   .newColumn {
@@ -19,7 +62,7 @@ export const StyledTable = styled.div`
     border: 1px solid #cfd8dc;
     position: relative;
     tr {
-      :last-child {
+      &:last-child {
         td {
           border-bottom: 0;
         }
@@ -40,6 +83,8 @@ export const StyledTable = styled.div`
         border-right: 0;
       }
       input {
+        background: transparent;
+        color: inherit;
         font-size: 1rem;
         padding: 0;
         margin: 0;
@@ -114,7 +159,9 @@ export const StyledTable = styled.div`
     th {
       background-color: ${(props: any): string => props.theme.colors.primary};
       color: ${(props: any): string => props.theme.colors.light};
-      padding: 16px;
+      overflow: visible;
+      padding: 8px 16px;
+      position: relative;
     }
 
     td {
@@ -124,6 +171,11 @@ export const StyledTable = styled.div`
         display: flex;
         height: 100%;
         padding: 8px 16px;
+
+        &Locked {
+          background-color: ${(props: any): string => props.theme.colors.background};
+          color: ${(props: any): string => props.theme.colors.secondary};
+        }
       }
     }
   }
@@ -133,16 +185,34 @@ export const StyledTable = styled.div`
   }
 
   .thContainer {
+    align-items: center;
     display: flex;
-    justify-content: space-between;
+    height: 100%;
+
+    &Icon {
+      margin-right: 10px;
+      height: 16px;
+      width: 16px;
+    }
 
     &Header {
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
       white-space: nowrap;
+      width: 100%;
+    }
+
+    &Settings {
+      color: ${(props: any): string => props.theme.colors.light};
     }
   }
 
   .controls {
     color: ${(props: any): string => props.theme.colors.light};
+  }
+
+  .popupButton {
+    width: 100%;
   }
 `;

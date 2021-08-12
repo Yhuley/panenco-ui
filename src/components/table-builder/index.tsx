@@ -4,19 +4,51 @@ import { useTable, useRowSelect, useColumnOrder, usePagination, useBlockLayout, 
 import { useSticky } from 'react-table-sticky';
 
 import { useMode, useTheme } from 'utils/hooks';
-import { ButtonIcon } from 'components/button-icon';
 import { Icon } from 'components/icon';
+import { Text } from 'components/text';
+import { ButtonIcon } from 'components';
+
 import { StyledTable } from './style';
 import makeData from './makeData';
+import { ColumnCreationModal } from './add-column-modal';
+import { Dropdown } from './dropdown';
 
 export interface TableBuilderProps extends React.HTMLAttributes<HTMLDivElement> {
   color?: string;
 }
+
 export type CompareElementIdType = {
   firstElementId: string;
   secondElementId: string;
 };
 
+const validationToText = {
+  numeric: 'Only numbers',
+  text: 'Only text',
+};
+
+const mandatoryToText = {
+  true: '',
+  false: 'Optional',
+};
+
+const mapById = (arrWithIds: { id: string }[]): string[] => arrWithIds.map((el) => el.id);
+
+// const swap = (columns: { id: string }[], firstElementId: string, secondElementId: string): string[] => {
+//   const swapped = mapById(columns);
+
+//   const firstElementIdIndex = swapped.indexOf(firstElementId);
+//   const secondElementIdIndex = swapped.indexOf(secondElementId);
+
+//   [swapped[firstElementIdIndex], swapped[secondElementIdIndex]] = [
+//     swapped[secondElementIdIndex],
+//     swapped[firstElementIdIndex],
+//   ];
+
+//   return swapped;
+// };
+
+// Create an indeterminate checkbox renderer
 const IndeterminateCheckbox = React.forwardRef(
   ({ indeterminate, ...rest }: { indeterminate: any; onChange: any }, ref: any) => {
     const defaultRef = React.useRef();
@@ -33,6 +65,22 @@ const IndeterminateCheckbox = React.forwardRef(
     );
   },
 );
+
+const RowsSelection = {
+  id: 'selection',
+  // sticky: 'left',
+  width: 56,
+  // The header can use the table's getToggleAllRowsSelectedProps method
+  // to render a checkbox
+  Header: ({ getToggleAllPageRowsSelectedProps }: { getToggleAllPageRowsSelectedProps: any }): JSX.Element => (
+    <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+  ),
+  // The cell can use the individual row's getToggleRowSelectedProps method
+  // to the render a checkbox
+  Cell: ({ row }: { row: any }): JSX.Element => {
+    return <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />;
+  },
+};
 
 // Create an editable cell renderer
 const EditableCell = ({ value: initialValue }: { value: string }): JSX.Element => {
@@ -66,42 +114,90 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
     const defaultColumns = React.useMemo(
       () => [
         {
-          Header: 'First Name',
-          accessor: 'firstName',
+          id: 'countryTo',
+          minWidth: 220,
+          width: 220,
+          Header: 'Country to',
+          visibility: null,
+          accessor: 'countryTo',
+          lock: true,
+          validation: 'numeric',
+          mandatory: true,
           // sticky: 'left',
         },
         {
-          Header: 'Last Name',
-          accessor: 'lastName',
+          id: 'totalWeight',
+          visibility: true,
+          minWidth: 220,
+          width: 220,
+          Header: 'Total weight',
+          validation: 'numeric',
+          accessor: 'totalWeight',
+          mandatory: true,
+          lock: true,
         },
         {
-          Header: 'Age',
-          accessor: 'age',
+          id: 'trucksAmount',
+          minWidth: 220,
+          visibility: true,
+          width: 220,
+          validation: 'numeric',
+          Header: '# Trucks',
+          accessor: 'trucksAmount',
+          mandatory: true,
+          lock: true,
         },
         {
-          Header: 'Visits',
-          accessor: 'visits',
+          id: 'attachment',
+          minWidth: 220,
+          width: 220,
+          Header: 'Attachment',
+          accessor: 'attachment',
+          mandatory: false,
+          visibility: true,
+          validation: 'numeric',
+          lock: false,
         },
         {
-          Header: 'Status',
-          accessor: 'status',
+          id: 'description',
+          minWidth: 220,
+          width: 220,
+          Header: 'Description',
+          accessor: 'description',
+          validation: 'numeric',
+          visibility: false,
+          mandatory: true,
+          lock: false,
         },
         {
-          Header: 'Profile Progress',
-          accessor: 'progress',
+          id: 'toll',
+          minWidth: 220,
+          width: 220,
+          mandatory: true,
+          visibility: false,
+          validation: 'numeric',
+          Header: 'Toll',
+          accessor: 'toll',
+          lock: false,
         },
       ],
       [],
     );
 
-    const [data, setData] = React.useState(() => makeData(5));
+    const [data, setData] = React.useState(() => makeData(20));
     const [columns, setColumns] = React.useState(defaultColumns);
+    const [tableWidth, setWidth] = React.useState(0);
+    const [columnSettings, setColumnSettings] = React.useState(null);
+    const [originalData] = React.useState(data);
+    const [skipPageReset, setSkipPageReset] = React.useState(false);
+    const [modalOpen, setModalOpen] = React.useState(false);
+
+    // console.log(columns, 'columns');
     const [activeCell, setActiveCell] = React.useState<{ row: number; column: number }>({
       row: -1,
       column: -1,
     });
-    const [originalData] = React.useState(data);
-    const [skipPageReset, setSkipPageReset] = React.useState(false);
+
     const activeDiv = React.useRef<HTMLDivElement>(null);
 
     const handleColumnsCreation = (column): void => {
@@ -156,7 +252,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       resetResizing,
       selectedFlatRows,
       state: { pageIndex, pageSize, selectedRowIds },
-      setColumnOrder,
+      // setColumnOrder,
       visibleColumns,
     } = useTable(
       {
@@ -175,23 +271,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       (hooks) => {
         hooks.visibleColumns.push((cols) => [
           // Column for selection
-          {
-            id: 'selection',
-            sticky: 'left',
-            width: 56,
-            // The header can use the table's getToggleAllRowsSelectedProps method
-            // to render a checkbox
-            Header: ({
-              getToggleAllPageRowsSelectedProps,
-            }: {
-              getToggleAllPageRowsSelectedProps: any;
-            }): JSX.Element => <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />,
-            // The cell can use the individual row's getToggleRowSelectedProps method
-            // to the render a checkbox
-            Cell: ({ row }: { row: any }): JSX.Element => {
-              return <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />;
-            },
-          },
+          RowsSelection,
           ...cols,
         ]);
       },
@@ -266,25 +346,9 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       };
     }, [handleKeyDown]);
 
-    const mapById = (arrWithIds): string[] => arrWithIds.map((el) => el.id);
-
-    function swap({ firstElementId, secondElementId }: CompareElementIdType): string[] {
-      const swapped = mapById(visibleColumns);
-
-      const firstElementIdIndex = swapped.indexOf(firstElementId);
-      const secondElementIdIndex = swapped.indexOf(secondElementId);
-
-      [swapped[firstElementIdIndex], swapped[secondElementIdIndex]] = [
-        swapped[secondElementIdIndex],
-        swapped[firstElementIdIndex],
-      ];
-
-      return swapped;
-    }
-
-    const setOrder = (firstElementId: string, secondElementId: string): void => {
-      setColumnOrder(swap({ firstElementId, secondElementId }));
-    };
+    // const setOrder = (firstElementId: string, secondElementId: string): void => {
+    //   setColumnOrder(swap(visibleColumns, firstElementId, secondElementId));
+    // };
 
     const addRow = (): void => {
       setSkipPageReset(true);
@@ -304,10 +368,19 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
       });
     };
 
-    const [tableWidth, setWidth] = React.useState(0);
-
     const theme = useTheme();
     const { mode } = useMode();
+
+    const openModal = () => setModalOpen(true);
+
+    function findWithAttr(array, attr, value): number {
+      for (let i = 0; i < array.length; i += 1) {
+        if (array[i][attr] === value) {
+          return i;
+        }
+      }
+      return -1;
+    }
 
     return (
       <StyledTable className={cx('TableBuilder', className)} theme={theme} mode={mode} ref={ref} style={style}>
@@ -332,15 +405,29 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
             {headerGroups.map((headerGroup) => (
               <tr key="tr" {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column, index) => {
-                  const showSwapButtons = column.id !== 'selection';
+                  const dataColumns = column.id !== 'selection';
 
-                  const renderLeft = index !== 1 && showSwapButtons;
-                  const renderRight = headerGroup.headers.length !== index + 1 && showSwapButtons;
+                  // const renderLeft = index !== 1 && dataColumns;
+                  // const renderRight = headerGroup.headers.length !== index + 1 && dataColumns;
 
+                  const { lock, visibility, validation, mandatory } = column;
+
+                  const activeSettingDropdown = column.id === columnSettings;
+
+                  const modify = (modifiedProperty) => {
+                    const buff = [...columns];
+
+                    const indexOfActiveCol = findWithAttr(columns, 'id', columnSettings);
+
+                    buff[indexOfActiveCol] = { ...buff[indexOfActiveCol], ...modifiedProperty };
+
+                    setColumns(buff);
+                  };
                   return (
-                    <th key="th" {...column.getHeaderProps()}>
-                      <div className="thContainer">
-                        {renderLeft && (
+                    <>
+                      <th key="th" {...column.getHeaderProps()}>
+                        <div className="thContainer">
+                          {/* {renderLeft && (
                           <ButtonIcon
                             iconClassName="controls"
                             icon={Icon.icons.chevronLeft}
@@ -350,9 +437,27 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                               }
                             }}
                           />
-                        )}
-                        <div className="thContainerHeader">{column.render('Header')}</div>
-                        {renderRight && (
+                        )} */}
+                          {lock ? <Icon icon={Icon.icons.lock} className="thContainerIcon" /> : null}
+                          {!visibility && !lock && dataColumns ? (
+                            <Icon icon={Icon.icons.unseen} className="thContainerIcon" />
+                          ) : null}
+                          <div className="thContainerHeader">
+                            {column.render('Header')}
+                            <Text weight={theme.typography.weights.medium} size={theme.typography.sizes.s}>
+                              {validationToText[validation] || mandatoryToText[mandatory]}
+                            </Text>
+                            {/* <Text weight={theme.typography.weights.medium}>{mandatoryToText[mandatory]}</Text> */}
+                          </div>
+                          {dataColumns && (
+                            <ButtonIcon
+                              iconClassName="thContainerSettings"
+                              icon={Icon.icons[activeSettingDropdown ? 'chevronUp' : 'chevronDown']}
+                              onClick={(): void => setColumnSettings(activeSettingDropdown ? null : column.id)}
+                            />
+                          )}
+
+                          {/* {renderRight && (
                           <ButtonIcon
                             iconClassName="controls"
                             icon={Icon.icons.chevronRight}
@@ -362,14 +467,21 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                               }
                             }}
                           />
+                        )} */}
+                          <div
+                            {...column.getResizerProps()}
+                            className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                          />
+                        </div>
+                        {activeSettingDropdown && (
+                          <Dropdown
+                            column={column}
+                            modifyProperty={modify}
+                            hideDropdown={() => setColumnSettings(null)}
+                          />
                         )}
-
-                        <div
-                          {...column.getResizerProps()}
-                          className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                        />
-                      </div>
-                    </th>
+                      </th>
+                    </>
                   );
                 })}
               </tr>
@@ -379,10 +491,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
               style={{ right: 0, left: tableWidth }}
               className="newColumn"
               onClick={(): void => {
-                handleColumnsCreation({
-                  Header: `Column ${columns.length}`,
-                  accessor: `createdCol${columns.length}`,
-                });
+                openModal();
               }}
             >
               Add column
@@ -395,6 +504,8 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                 <tr key="tr" {...row.getRowProps()}>
                   {row.cells.map((cell, index) => {
                     const isActiveCell = index === activeCell.column && cell.row.index === activeCell.row;
+
+                    const { column } = cell;
                     return (
                       <td
                         key="td"
@@ -405,7 +516,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
                         }}
                       >
                         <div
-                          className="tdContent"
+                          className={cx('tdContent', column.lock && 'tdContentLocked')}
                           style={{ border: `2px solid ${isActiveCell ? theme.colors.accent : 'transparent'}` }}
                           ref={activeDiv}
                           data-active-row={Number(i)}
@@ -461,7 +572,7 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
               setPageSize(Number(e.target.value));
             }}
           >
-            {[10, 20, 30, 40, 50].map((pageSizeValue) => (
+            {[20, 40, 60, 80, 100].map((pageSizeValue) => (
               <option key={pageSizeValue} value={pageSizeValue}>
                 Show {pageSizeValue}
               </option>
@@ -481,6 +592,11 @@ export const TableBuilder = React.forwardRef<HTMLDivElement, TableBuilderProps>(
             )}
           </code>
         </pre>
+        <ColumnCreationModal
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+          handleColumnsCreation={(data) => handleColumnsCreation(data)}
+        />
       </StyledTable>
     );
   },

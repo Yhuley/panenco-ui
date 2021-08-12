@@ -5,14 +5,13 @@ function range(length) {
 }
 
 const newPerson = () => {
-  const statusChance = Math.random();
   return {
-    firstName: namor.generate({ words: 1, numbers: 0 }),
-    lastName: namor.generate({ words: 1, numbers: 0 }),
-    age: Math.floor(Math.random() * 30),
-    visits: Math.floor(Math.random() * 100),
-    progress: Math.floor(Math.random() * 100),
-    status: statusChance > 0.33 ? 'complicated' : 'single',
+    countryTo: namor.generate({ words: 1, numbers: 0 }),
+    totalWeight: Math.floor(Math.random() * 30),
+    trucksAmount: Math.floor(Math.random() * 30),
+    attachment: namor.generate({ words: 1, numbers: 0 }),
+    description: namor.generate({ words: 1, numbers: 0 }),
+    toll: Math.floor(Math.random() * 100),
   };
 };
 
