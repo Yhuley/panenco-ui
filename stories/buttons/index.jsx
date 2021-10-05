@@ -1,4 +1,4 @@
-import { Button, ButtonIcon, Col, Icon, PrimaryButton, Row, SecondaryButton } from 'components';
+import { Button, ButtonIcon, Col, Icon, PrimaryButton, Row, SecondaryButton, Text } from 'components';
 import ButtonIconDocs from 'components/button-icon/icon-button-DOCS.md';
 import ButtonIconReadme from 'components/button-icon/icon-button-README.md';
 import ButtonDocs from 'components/button/button-DOCS.md';
@@ -7,6 +7,7 @@ import LinkDocs from 'components/button/link-DOCS.md';
 import LinkReadme from 'components/button/link-README.md';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { sizes, weights } from 'styles';
 
 import { decorator } from '../../utils/decorator';
 import { WrappedComponent } from '../helpers/wrapped';
@@ -14,57 +15,72 @@ import { WrappedComponent } from '../helpers/wrapped';
 export default decorator('Button', ButtonDocs, ButtonReadme).add('Button component', () => {
   return (
     <WrappedComponent>
-      <div style={{ display: 'flex', width: '100%' }}>
-        <div style={{ width: '50%' }}>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col m="8" l="6">
-              <Button>Button</Button>
-              <Button disabled>Button disabled</Button>
-            </Col>
-          </Row>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col s="2" m="8" l="6">
-              <PrimaryButton>Primary Button</PrimaryButton>
-              <PrimaryButton isLoading>Primary Button</PrimaryButton>
-              <PrimaryButton isLoading>Primary Button</PrimaryButton>
-              <PrimaryButton disabled>Primary disabled</PrimaryButton>
-            </Col>
-          </Row>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col s="2" m="8" l="6">
-              <SecondaryButton>Secondary Button</SecondaryButton>
-              <SecondaryButton disabled>Secondary Disabled</SecondaryButton>
-            </Col>
-          </Row>
-        </div>
-        <div style={{ width: '50%' }}>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col s="2" m="8" l="6">
-              <Button iconRight icon={Icon.icons.chevronRight}>
-                Icon Right
-              </Button>
-              <Button iconLeft={Icon.icons.chevronLeft} disabled>
-                Icon Left
-              </Button>
-            </Col>
-          </Row>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col s="2" m="8" l="6">
-              <PrimaryButton iconRight={Icon.icons.chevronRight}>Icon Right</PrimaryButton>
-              <PrimaryButton isLoading iconRight={Icon.icons.chevronRight} disabled>
-                Icon Right
-              </PrimaryButton>
-            </Col>
-          </Row>
-          <Row style={{ justifyContent: 'center' }}>
-            <Col s="2" m="8" l="6">
-              <SecondaryButton iconLeft={Icon.icons.chevronLeft}>Icon Left</SecondaryButton>
-              <SecondaryButton iconLeft={Icon.icons.chevronLeft} disabled>
-                Icon Left
-              </SecondaryButton>
-            </Col>
-          </Row>
-        </div>
+      <div style={{margin: "20px 0"}}>
+        <Text size={sizes.l} weight={weights.bold}>Variants:</Text>
+        <Row spacing={1}>
+          <Col>
+            <Button>Button</Button>
+          </Col>
+          <Col>
+            <PrimaryButton>Primary Button</PrimaryButton>
+          </Col>
+          <Col>
+            <SecondaryButton>Secondary Button</SecondaryButton>
+          </Col>
+        </Row>
+      </div>
+      <div style={{margin: "20px 0"}}>
+        <Text size={sizes.l} weight={weights.bold}>Disabled:</Text>
+        <Row spacing={1}>
+          <Col>
+            <Button disabled>Button</Button>
+          </Col>
+          <Col>
+            <PrimaryButton disabled>Primary Button</PrimaryButton>
+          </Col>
+          <Col>
+            <SecondaryButton disabled>Secondary Button</SecondaryButton>
+          </Col>
+        </Row>
+      </div>
+      <div style={{margin: "20px 0"}}>
+        <Text size={sizes.l} weight={weights.bold}>Loading:</Text>
+        <Row spacing={1}>
+          <Col>
+            <Button isLoading>Button</Button>
+          </Col>
+          <Col>
+            <PrimaryButton isLoading>Primary Button</PrimaryButton>
+          </Col>
+          <Col>
+            <SecondaryButton isLoading>Secondary Button</SecondaryButton>
+          </Col>
+        </Row>
+      </div>
+      <div style={{margin: "20px 0"}}>
+        <Text size={sizes.l} weight={weights.bold}>Icons:</Text>
+        <Row spacing={1}>
+          <Col>
+            <Button iconRight icon={Icon.icons.chevronRight}>Icon right</Button>
+          </Col>
+          <Col>
+            <PrimaryButton iconRight icon={Icon.icons.chevronRight}>Icon right</PrimaryButton>
+          </Col>
+          <Col>
+            <SecondaryButton iconRight icon={Icon.icons.chevronRight}>Icon right</SecondaryButton>
+          </Col>
+        </Row>
+        <Row spacing={1}>
+          <Col>
+            <Button iconLeft icon={Icon.icons.chevronLeft}>Icon left</Button>
+          </Col>
+          <Col>
+            <PrimaryButton iconLeft icon={Icon.icons.chevronLeft}>Icon left</PrimaryButton>
+          </Col>
+          <Col>
+            <SecondaryButton iconLeft icon={Icon.icons.chevronLeft}>Icon left</SecondaryButton>
+          </Col>
+        </Row>
       </div>
     </WrappedComponent>
   );
@@ -112,22 +128,22 @@ export const ButtonIcons = decorator('Button', ButtonIconDocs, ButtonIconReadme)
   return (
     <BrowserRouter>
       <WrappedComponent>
-        <Row style={{ justifyContent: 'center' }}>
-          <Col s="2" m="2" l="3">
-            <ButtonIcon icon={Icon.icons.trash}>Button Icon</ButtonIcon>
-          </Col>
-          <Col s="2" m="2" l="3">
-            <ButtonIcon iconLeft={Icon.icons.trash}>Button Icon Left</ButtonIcon>
-          </Col>
-        </Row>
-        <Row style={{ justifyContent: 'center' }}>
-          <Col s="2" m="2" l="3">
-            <ButtonIcon icon={Icon.icons.lock}>Button Icon</ButtonIcon>
-          </Col>
-          <Col s="2" m="2" l="3">
-            <ButtonIcon iconLeft={Icon.icons.lock}>Button Icon Left</ButtonIcon>
-          </Col>
-        </Row>
+        <div style={{margin: "20px 0"}}>
+          <Row spacing={1}>
+            <Col xs="12" sm="6">
+              <ButtonIcon icon={Icon.icons.trash}>Button Icon</ButtonIcon>
+            </Col>
+            <Col xs="12" sm="6">
+              <ButtonIcon iconLeft={Icon.icons.trash}>Button Icon Left</ButtonIcon>
+            </Col>
+            <Col xs="12" sm="6">
+              <ButtonIcon icon={Icon.icons.lock}>Button Icon</ButtonIcon>
+            </Col>
+            <Col xs="12" sm="6">
+              <ButtonIcon iconLeft={Icon.icons.lock}>Button Icon Left</ButtonIcon>
+            </Col>
+          </Row>
+        </div>
       </WrappedComponent>
     </BrowserRouter>
   );
