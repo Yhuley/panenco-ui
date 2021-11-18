@@ -73,7 +73,7 @@ export const customStyles = (theme: PUITheme, mode?: string, error?: any, styles
         return mode === ThemeMode.dark ? theme.colors.dark : theme.colors.light;
       })()}`,
       boxShadow: !menuIsOpen && isFocused && `0px 0px 0px 2px ${theme.colors.outline}`,
-      border: `'1px solid ${isBorderColor()}`,
+      border: `1px solid ${isBorderColor()}`,
       borderBottomColor: menuIsOpen && 'transparent',
       // borderBottomColor: menuIsOpen && 'transparent',
       borderBottomLeftRadius: menuIsOpen && 0,
