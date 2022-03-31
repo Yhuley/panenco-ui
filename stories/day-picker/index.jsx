@@ -11,7 +11,7 @@ import { decorator } from '../../utils/decorator';
 import { WrappedComponent } from '../helpers/wrapped';
 
 export default decorator('DayPicker', DayPickerDocs, README).add('DayPicker', () => {
-  const [value, setValue] = React.useState(new Date());
+  const [value, setValue] = React.useState(new Date('Mar 10 2022 11:12'));
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const handleChange = ( val ) => {
     setValue(val);
@@ -43,7 +43,7 @@ export default decorator('DayPicker', DayPickerDocs, README).add('DayPicker', ()
         <Formik
           initialValues={ {date: value} }
           onSubmit={(values) => console.log(values)}
-          >
+        >
           {(props) => (
             <Form>
               <Field
