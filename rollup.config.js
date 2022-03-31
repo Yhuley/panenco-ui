@@ -10,6 +10,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import typescript from 'rollup-plugin-typescript2';
 import ttypescript from 'ttypescript';
+import sourcemaps from 'rollup-plugin-sourcemaps';
 
 import packageJson from './package.json';
 
@@ -22,11 +23,13 @@ export default {
   output: {
     file: path.join(paths.outputPath, 'ui.esm.js'),
     format: 'esm',
+    sourcemap: true,
   },
   plugins: [
     // alias({
     //   config: paths.appConfig,
     // }),
+    sourcemaps(),
     replace({
       preventAssignment: true,
       'process.env.NODE_ENV': JSON.stringify('production'),

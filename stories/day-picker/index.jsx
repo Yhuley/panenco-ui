@@ -46,11 +46,10 @@ export default decorator('DayPicker', DayPickerDocs, README).add('DayPicker', ()
           {(props) => (
             <Form>
               <Field
-                component={DayPicker}
+                as={DayPicker}
                 isTimePicker
                 id="date"
                 name="date"
-                onChange={e => props.setFieldValue('date', e)}
                 format="MM/dd/yyyy HH:mm"
                 placeholder="mm/dd/yy 00:00"
               />
