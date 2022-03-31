@@ -5,7 +5,6 @@ import DayPickerDocs from 'components/form/day-picker/day-picker-DOCS.md';
 import README from 'components/form/day-picker/day-picker-README.md';
 import React from 'react';
 import { Formik, Form, Field } from 'formik';
-import { format}from 'date-fns';
 
 import { decorator } from '../../utils/decorator';
 import { WrappedComponent } from '../helpers/wrapped';
@@ -52,7 +51,6 @@ export default decorator('DayPicker', DayPickerDocs, README).add('DayPicker', ()
                 id="date"
                 name="date"
                 onChange={e => props.setFieldValue('date', e)}
-                value={props.values.date}
                 format="MM/dd/yyyy HH:mm"
                 placeholder="mm/dd/yy 00:00"
               />
